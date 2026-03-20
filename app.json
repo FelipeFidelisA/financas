@@ -7,7 +7,11 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.felipefidelis.financas",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -16,7 +20,11 @@
       },
       "package": "com.felipefidelis.financas"
     },
-    "web": {
+    "web": {},
+    "extra": {
+      "eas": {
+        "projectId": "0a43101b-182e-40e9-86a5-d47ba5de4dfd"
+      }
     }
   }
 }
