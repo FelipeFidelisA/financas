@@ -11,6 +11,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import Svg, { Circle } from 'react-native-svg';
 import {
   BarChart3,
@@ -267,6 +269,53 @@ export default function App() {
         },
       },
     ]);
+  }
+
+  async function handleExportJson() {
+    try {
+      const exportPayload = {
+        exportedAt: new Date().toISOString(),
+        app: 'Minhas Financas',
+        version: '1.0.0',
+        transactions,
+        categories,
+      };
+
+      const date = new Date();
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hour = String(date.getHours()).padStart(2, '0');
+      const minute = String(date.getMinutes()).padStart(2, '0');
+      const second = String(date.getSeconds()).padStart(2, '0');
+
+      const fileName = `financas-export-${year}${month}${day}-${hour}${minute}${second}.json`;
+      const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+
+      await FileSystem.writeAsStringAsync(
+        fileUri,
+        JSON.stringify(exportPayload, null, 2),
+        {
+          encoding: FileSystem.EncodingType.UTF8,
+        },
+      );
+
+      const canShare = await Sharing.isAvailableAsync();
+
+      if (!canShare) {
+        Alert.alert('Exportado', `Arquivo salvo em: ${fileUri}`);
+        return;
+      }
+
+      await Sharing.shareAsync(fileUri, {
+        mimeType: 'application/json',
+        dialogTitle: 'Exportar dados em JSON',
+        UTI: 'public.json',
+      });
+    } catch (error) {
+      Alert.alert('Erro', 'Nao foi possivel exportar o JSON.');
+      console.error('Error exporting JSON:', error);
+    }
   }
 
   const totals = transactions.reduce((acc, t) => {
@@ -531,6 +580,10 @@ export default function App() {
           />
           <TouchableOpacity style={styles.primaryButton} onPress={handleCreateCategory}>
             <Text style={styles.primaryButtonText}>Salvar categoria</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.exportButton} onPress={handleExportJson}>
+            <Text style={styles.exportButtonText}>Exportar dados em JSON</Text>
           </TouchableOpacity>
         </View>
 
@@ -981,6 +1034,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   primaryButtonText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  exportButton: {
+    backgroundColor: '#0f766e',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  exportButtonText: {
     color: '#fff',
     fontWeight: '700',
   },
